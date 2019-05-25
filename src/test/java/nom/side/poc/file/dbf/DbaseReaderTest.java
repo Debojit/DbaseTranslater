@@ -4,68 +4,88 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class DbaseReaderTest {
-	private String testFile = "C:\\u99\\data\\CUSTOMS.dbf";
+	private static String dbaseFileName = "CUSTOMS.dbf";
+	private URL dbaseFileUrl = ClassLoader.getSystemResource(dbaseFileName);
+	
+	private static InputStream dbaseFileInputStream;
+	private static OutputStream targetFileOutputStream;
+	
+	private static TemporaryFolder tmpDir = new TemporaryFolder();
+	
+	@BeforeClass
+	public static void setup() throws IOException {
+		tmpDir.create();
+	}
+	
+	@AfterClass
+	public static void tearDown() throws IOException {
+		tmpDir.delete();
+	}
+	
+	@Before
+	public void initStreams() throws IOException, URISyntaxException {
+		File dbaseFile = new File(dbaseFileUrl.toURI());
+		dbaseFileInputStream = new FileInputStream(dbaseFile);
+	}
+	
+	@After
+	public void resetStreams() throws IOException {
+		dbaseFileInputStream.close();
+		targetFileOutputStream.flush();
+		targetFileOutputStream.close();
+	}
 	
 	@Test
-	public void dbaseToXml() throws IOException {
-		File dbaseFile = new File(testFile);
-		FileInputStream fis = new FileInputStream(dbaseFile);
-		
-		String fileName = dbaseFile.getName();
-		fileName = fileName.substring(0, fileName.lastIndexOf("."));
+	public void dbaseToXml() throws IOException, URISyntaxException {
+		String fileName = dbaseFileName.substring(0, dbaseFileName.lastIndexOf("."));
 		
 		DbaseReader reader = new DbaseReader();
-		String content = reader.dbaseToXml(fileName, fileName + "_Record", fis);
-		fis.close();
+		String content = reader.dbaseToXml(fileName, fileName + "_Record", dbaseFileInputStream);
 		
 		Assert.assertNotNull(content);
 		
-		File fileNameXml = new File(dbaseFile.getParent() + File.separator + fileName + ".xml");
-		FileOutputStream fos = new FileOutputStream(fileNameXml);
-		fos.write(content.getBytes());
-		fos.close();
+		File xmlFileName = tmpDir.newFile(fileName + ".xml");
+		targetFileOutputStream = new FileOutputStream(xmlFileName);
+		targetFileOutputStream.write(content.getBytes());
 	}
 	
 	@Test
 	public void dbaseToJson() throws IOException {
-		File dbaseFile = new File(testFile);
-		FileInputStream fis = new FileInputStream(dbaseFile);
-		
-		String fileName = dbaseFile.getName();
-		fileName = fileName.substring(0, fileName.lastIndexOf("."));
+		String fileName = dbaseFileName.substring(0, dbaseFileName.lastIndexOf("."));
 		
 		DbaseReader reader = new DbaseReader();
-		String content = reader.dbaseToJson(fis);
-		fis.close();
+		String content = reader.dbaseToJson(dbaseFileInputStream);
 		
 		Assert.assertNotNull(content);
-		File fileNameJson = new File(dbaseFile.getParent() + File.separator + fileName + ".json");
-		FileOutputStream fos = new FileOutputStream(fileNameJson);
-		fos.write(content.getBytes());
-		fos.close();
+		File fileNameJson = tmpDir.newFile(fileName + ".json");
+		targetFileOutputStream = new FileOutputStream(fileNameJson);
+		targetFileOutputStream.write(content.getBytes());
 	}
 	
 	@Test
 	public void dbaseToCsv() throws IOException {
-		File dbaseFile = new File(testFile);
-		FileInputStream fis = new FileInputStream(dbaseFile);
-		
-		String fileName = dbaseFile.getName();
-		fileName = fileName.substring(0, fileName.lastIndexOf("."));
+		String fileName = dbaseFileName.substring(0, dbaseFileName.lastIndexOf("."));
 		
 		DbaseReader reader = new DbaseReader();
-		String content = reader.dbaseToCsv(fis);
-		fis.close();
+		String content = reader.dbaseToCsv(dbaseFileInputStream);
 		
 		Assert.assertNotNull(content);
-		File fileNameJson = new File(dbaseFile.getParent() + File.separator + fileName + ".csv");
-		FileOutputStream fos = new FileOutputStream(fileNameJson);
-		fos.write(content.getBytes());
-		fos.close();
+		File fileNameCsv = tmpDir.newFile(fileName + ".csv");
+		targetFileOutputStream = new FileOutputStream(fileNameCsv);
+		targetFileOutputStream.write(content.getBytes());
 	}
 }
