@@ -41,11 +41,9 @@ public class DbaseReader {
 			List<String[]> records = this.getRecords(dbaseDocument);
 			
 			StringBuilder dbaseCsvStringBuilder = new StringBuilder(String.join(",", header) + "\n");
-			
 			for(String[] record : records) {
 				dbaseCsvStringBuilder.append(String.join(",", record) + "\n");
 			}
-			
 			responseData = dbaseCsvStringBuilder.toString();
 		} catch (IOException | SAXException | TikaException | ParserConfigurationException | XPathExpressionException e) {
 			e.printStackTrace();
@@ -63,7 +61,6 @@ public class DbaseReader {
 			List<String[]> records = this.getRecords(dbaseDocument);
 			
 			StringBuilder dbaseJsonStringBuilder = new StringBuilder("[\n");
-			
 			for(String[] record : records) {
 				dbaseJsonStringBuilder.append("\t{\n");
 				for(int i = 0; i < record.length; i++)
@@ -81,7 +78,6 @@ public class DbaseReader {
 				else
 					dbaseJsonStringBuilder.append("\t},\n");
 			}
-			
 			responseData = dbaseJsonStringBuilder.append("]").toString();
 		} catch (IOException | SAXException | TikaException | ParserConfigurationException | XPathExpressionException e) {
 			e.printStackTrace();
@@ -105,17 +101,14 @@ public class DbaseReader {
 			List<String[]> records = this.getRecords(dbaseDocument); 
 			
 			StringBuilder dbaseXmlStringBuilder = new StringBuilder("<?xml version=\"1.0\" ?>\n<" + rootNode + ">\n");
-			
 			for(String[] record : records) {
 				dbaseXmlStringBuilder.append("\t<" + recordNode + ">\n");
 				for(int i = 0; i < record.length; i++)
 					dbaseXmlStringBuilder.append("\t\t<" + header[i] + ">")
 										 .append(record[i])
 										 .append("</" + header[i] + ">\n");
-				
 				dbaseXmlStringBuilder.append("\t</" + recordNode + ">\n");
 			}
-			
 			responseData = dbaseXmlStringBuilder.append("</" + rootNode + ">").toString();
 		} catch (IOException | SAXException | TikaException | ParserConfigurationException | XPathExpressionException e) {
 			e.printStackTrace();
@@ -127,7 +120,6 @@ public class DbaseReader {
 	private String parseDbf(InputStream dbaseInputStream) throws IOException, SAXException, TikaException {
 		Parser parser =  new DBFParser();
 		ContentHandler handler = new BodyContentHandler(new ToXMLContentHandler());
-		
 		parser.parse(dbaseInputStream, handler, new Metadata(), new ParseContext());
 		
 		if(dbaseInputStream != null) {
